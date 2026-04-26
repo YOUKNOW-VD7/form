@@ -3,90 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Formulaire Supabase</title>
+  <title>Inscription / Connexion Supabase</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:linear-gradient(135deg,#eef4ff,#f7f8fc);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
     }
-    .card {
-      width: 100%;
-      max-width: 420px;
-      background: #fff;
-      padding: 24px;
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    .card{
+      width:100%;
+      max-width:460px;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 12px 35px rgba(0,0,0,.08);
+      padding:24px;
     }
-    h1 {
-      margin: 0 0 18px;
-      font-size: 24px;
-      text-align: center;
+    h1{
+      margin:0 0 18px;
+      text-align:center;
+      font-size:26px;
     }
-    label {
-      display: block;
-      margin: 14px 0 6px;
-      font-weight: 600;
+    .tabs{
+      display:flex;
+      gap:10px;
+      margin-bottom:18px;
     }
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px 14px;
-      border: 1px solid #d8dee9;
-      border-radius: 10px;
-      outline: none;
-      font-size: 16px;
+    .tab{
+      flex:1;
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      background:#edf2ff;
+      cursor:pointer;
+      font-weight:700;
     }
-    input:focus {
-      border-color: #4c7dff;
+    .tab.active{
+      background:#4c7dff;
+      color:#fff;
     }
-    button {
-      width: 100%;
-      margin-top: 18px;
-      padding: 12px 14px;
-      border: none;
-      border-radius: 10px;
-      background: #4c7dff;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
+    label{
+      display:block;
+      margin:12px 0 6px;
+      font-weight:600;
     }
-    button:hover {
-      background: #3d6bf0;
+    input{
+      width:100%;
+      box-sizing:border-box;
+      padding:12px 14px;
+      border:1px solid #d9e0ec;
+      border-radius:10px;
+      font-size:16px;
+      outline:none;
     }
-    .msg {
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 10px;
-      display: none;
+    input:focus{
+      border-color:#4c7dff;
     }
-    .success { background: #e8fff1; color: #116b35; }
-    .error { background: #ffecec; color: #a10000; }
+    button.submit{
+      width:100%;
+      margin-top:18px;
+      padding:12px 14px;
+      border:none;
+      border-radius:10px;
+      background:#4c7dff;
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
+    }
+    button.submit:hover{
+      background:#3d6bf0;
+    }
+    .msg{
+      margin-top:16px;
+      padding:12px;
+      border-radius:10px;
+      display:none;
+    }
+    .success{ background:#e8fff1; color:#116b35; }
+    .error{ background:#ffecec; color:#a10000; }
+    .hidden{ display:none; }
+    .userbox{
+      margin-top:18px;
+      padding:14px;
+      border:1px solid #e6eaf2;
+      border-radius:10px;
+      background:#fafbff;
+    }
+    .logout{
+      margin-top:12px;
+      background:#111827;
+      color:#fff;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Formulaire</h1>
+    <h1>Compte utilisateur</h1>
 
-    <form id="contactForm">
-      <label for="nom">Nom</label>
-      <input type="text" id="nom" name="nom" placeholder="Votre nom" required>
+    <div class="tabs">
+      <button class="tab active" id="btnSignup" type="button">Inscription</button>
+      <button class="tab" id="btnLogin" type="button">Connexion</button>
+    </div>
 
+    <form id="authForm">
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="Votre email" required>
+      <input type="email" id="email" required placeholder="exemple@email.com" />
 
-       <label for="message">Message</label>
-      <input type="message" id="sujet" name="message" placeholder="Votre message" required>
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" required placeholder="********" />
 
-      <button type="submit">Envoyer</button>
+      <button class="submit" type="submit" id="submitBtn">Créer un compte</button>
     </form>
 
     <div id="message" class="msg"></div>
+
+    <div id="userBox" class="userbox hidden">
+      <div><strong>Connecté :</strong> <span id="userEmail"></span></div>
+      <button class="submit logout" id="logoutBtn" type="button">Se déconnecter</button>
+    </div>
   </div>
 
   <script type="module">
@@ -96,8 +134,16 @@
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1cHN4dWh4a2poYW96a3JpY3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxOTU1MzcsImV4cCI6MjA5Mjc3MTUzN30.kXQ6B9sJM0E_EmPIoRXx5R52DminS96TrkGwO7nkgJ0";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const form = document.getElementById("contactForm");
+    const btnSignup = document.getElementById("btnSignup");
+    const btnLogin = document.getElementById("btnLogin");
+    const submitBtn = document.getElementById("submitBtn");
+    const authForm = document.getElementById("authForm");
     const message = document.getElementById("message");
+    const userBox = document.getElementById("userBox");
+    const userEmail = document.getElementById("userEmail");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    let mode = "signup";
 
     function showMessage(text, type) {
       message.textContent = text;
@@ -105,27 +151,71 @@
       message.style.display = "block";
     }
 
-    form.addEventListener("submit", async (e) => {
+    function setMode(newMode) {
+      mode = newMode;
+      btnSignup.classList.toggle("active", mode === "signup");
+      btnLogin.classList.toggle("active", mode === "login");
+      submitBtn.textContent = mode === "signup" ? "Créer un compte" : "Se connecter";
+      message.style.display = "none";
+    }
+
+    btnSignup.addEventListener("click", () => setMode("signup"));
+    btnLogin.addEventListener("click", () => setMode("login"));
+
+    authForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const nom = document.getElementById("nom").value.trim();
       const email = document.getElementById("email").value.trim();
-      const mess = document.getElementById("sujet").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-      const { data, error } = await supabase
-        .from("formulaires")
-        .insert([{ nom, email, mess }])
-        .select();
+      if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password
+        });
 
+        if (error) {
+          showMessage("Erreur inscription : " + error.message, "error");
+          return;
+        }
+
+        showMessage("✅ Compte créé. Vérifie ton email si la confirmation est activée.", "success");
+        if (data.user) {
+          userEmail.textContent = data.user.email || email;
+          userBox.classList.remove("hidden");
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          showMessage("Erreur connexion : " + error.message, "error");
+          return;
+        }
+
+        showMessage("✅ Connexion réussie.", "success");
+        userEmail.textContent = data.user.email;
+        userBox.classList.remove("hidden");
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      const { error } = await supabase.auth.signOut();
       if (error) {
-        showMessage("Erreur: " + error.message, "error");
+        showMessage("Erreur déconnexion : " + error.message, "error");
         return;
       }
-
-      showMessage("✅ Envoyé avec succès.", "success");
-      form.reset();
-      console.log("Donnée enregistrée :", data);
+      userBox.classList.add("hidden");
+      showMessage("Déconnecté.", "success");
     });
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session) {
+      userEmail.textContent = sessionData.session.user.email;
+      userBox.classList.remove("hidden");
+      showMessage("Session déjà active.", "success");
+    }
   </script>
 </body>
 </html>
