@@ -81,7 +81,7 @@
       <input type="email" id="email" name="email" placeholder="Votre email" required>
 
        <label for="message">Message</label>
-      <input type="message" id="message" name="message" placeholder="Votre message" required>
+      <input type="message" id="sujet" name="message" placeholder="Votre message" required>
 
       <button type="submit">Envoyer</button>
     </form>
@@ -110,11 +110,11 @@
 
       const nom = document.getElementById("nom").value.trim();
       const email = document.getElementById("email").value.trim();
-      const message = document.getElementById("message").value.trim();
+      const mess = document.getElementById("sujet").value.trim();
 
       const { data, error } = await supabase
         .from("formulaires")
-        .insert([{ nom, email, message }])
+        .insert([{ nom, email, mess }])
         .select();
 
       if (error) {
