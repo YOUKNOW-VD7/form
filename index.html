@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inscription / Connexion Supabase</title>
+  <title>Inscription / Connexion</title>
   <style>
     body{
       margin:0;
-      font-family:Arial, sans-serif;
+      font-family:Arial,sans-serif;
       background:linear-gradient(135deg,#eef4ff,#f7f8fc);
       min-height:100vh;
       display:flex;
@@ -23,81 +23,35 @@
       box-shadow:0 12px 35px rgba(0,0,0,.08);
       padding:24px;
     }
-    h1{
-      margin:0 0 18px;
-      text-align:center;
-      font-size:26px;
-    }
-    .tabs{
-      display:flex;
-      gap:10px;
-      margin-bottom:18px;
-    }
+    h1{ margin:0 0 18px; text-align:center; font-size:26px; }
+    .tabs{ display:flex; gap:10px; margin-bottom:18px; }
     .tab{
-      flex:1;
-      padding:12px;
-      border:none;
-      border-radius:10px;
-      background:#edf2ff;
-      cursor:pointer;
-      font-weight:700;
+      flex:1; padding:12px; border:none; border-radius:10px;
+      background:#edf2ff; cursor:pointer; font-weight:700;
     }
-    .tab.active{
-      background:#4c7dff;
-      color:#fff;
-    }
-    label{
-      display:block;
-      margin:12px 0 6px;
-      font-weight:600;
-    }
+    .tab.active{ background:#4c7dff; color:#fff; }
+    label{ display:block; margin:12px 0 6px; font-weight:600; }
     input{
-      width:100%;
-      box-sizing:border-box;
-      padding:12px 14px;
-      border:1px solid #d9e0ec;
-      border-radius:10px;
-      font-size:16px;
-      outline:none;
+      width:100%; box-sizing:border-box; padding:12px 14px;
+      border:1px solid #d9e0ec; border-radius:10px; font-size:16px; outline:none;
     }
-    input:focus{
-      border-color:#4c7dff;
-    }
+    input:focus{ border-color:#4c7dff; }
     button.submit{
-      width:100%;
-      margin-top:18px;
-      padding:12px 14px;
-      border:none;
-      border-radius:10px;
-      background:#4c7dff;
-      color:#fff;
-      font-size:16px;
-      cursor:pointer;
+      width:100%; margin-top:18px; padding:12px 14px; border:none;
+      border-radius:10px; background:#4c7dff; color:#fff; font-size:16px; cursor:pointer;
     }
-    button.submit:hover{
-      background:#3d6bf0;
-    }
+    button.submit:hover{ background:#3d6bf0; }
     .msg{
-      margin-top:16px;
-      padding:12px;
-      border-radius:10px;
-      display:none;
+      margin-top:16px; padding:12px; border-radius:10px; display:none;
     }
     .success{ background:#e8fff1; color:#116b35; }
     .error{ background:#ffecec; color:#a10000; }
     .hidden{ display:none; }
     .userbox{
-      margin-top:18px;
-      padding:14px;
-      border:1px solid #e6eaf2;
-      border-radius:10px;
-      background:#fafbff;
+      margin-top:18px; padding:14px; border:1px solid #e6eaf2;
+      border-radius:10px; background:#fafbff;
     }
-    .logout{
-      margin-top:12px;
-      background:#111827;
-      color:#fff;
-    }
+    .logout{ margin-top:12px; background:#111827; color:#fff; }
   </style>
 </head>
 <body>
@@ -110,6 +64,9 @@
     </div>
 
     <form id="authForm">
+      <label for="nom" id="nomLabel">Nom</label>
+      <input type="text" id="nom" required placeholder="Votre nom" />
+
       <label for="email">Email</label>
       <input type="email" id="email" required placeholder="exemple@email.com" />
 
@@ -123,6 +80,7 @@
 
     <div id="userBox" class="userbox hidden">
       <div><strong>Connecté :</strong> <span id="userEmail"></span></div>
+      <div><strong>Nom :</strong> <span id="userNom"></span></div>
       <button class="submit logout" id="logoutBtn" type="button">Se déconnecter</button>
     </div>
   </div>
@@ -141,7 +99,10 @@
     const message = document.getElementById("message");
     const userBox = document.getElementById("userBox");
     const userEmail = document.getElementById("userEmail");
+    const userNom = document.getElementById("userNom");
     const logoutBtn = document.getElementById("logoutBtn");
+    const nomInput = document.getElementById("nom");
+    const nomLabel = document.getElementById("nomLabel");
 
     let mode = "signup";
 
@@ -156,7 +117,10 @@
       btnSignup.classList.toggle("active", mode === "signup");
       btnLogin.classList.toggle("active", mode === "login");
       submitBtn.textContent = mode === "signup" ? "Créer un compte" : "Se connecter";
+      nomInput.style.display = mode === "signup" ? "block" : "none";
+      nomLabel.style.display = mode === "signup" ? "block" : "none";
       message.style.display = "none";
+      nomInput.required = mode === "signup";
     }
 
     btnSignup.addEventListener("click", () => setMode("signup"));
@@ -164,13 +128,18 @@
 
     authForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      const nom = nomInput.value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email,
-          password
+          password,
+          options: {
+            data: { nom }
+          }
         });
 
         if (error) {
@@ -181,6 +150,7 @@
         showMessage("✅ Compte créé. Vérifie ton email si la confirmation est activée.", "success");
         if (data.user) {
           userEmail.textContent = data.user.email || email;
+          userNom.textContent = nom;
           userBox.classList.remove("hidden");
         }
       } else {
@@ -194,8 +164,15 @@
           return;
         }
 
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("nom")
+          .eq("id", data.user.id)
+          .single();
+
         showMessage("✅ Connexion réussie.", "success");
         userEmail.textContent = data.user.email;
+        userNom.textContent = profile?.nom || data.user.user_metadata?.nom || "";
         userBox.classList.remove("hidden");
       }
     });
@@ -212,10 +189,20 @@
 
     const { data: sessionData } = await supabase.auth.getSession();
     if (sessionData.session) {
-      userEmail.textContent = sessionData.session.user.email;
+      const user = sessionData.session.user;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("nom")
+        .eq("id", user.id)
+        .single();
+
+      userEmail.textContent = user.email;
+      userNom.textContent = profile?.nom || user.user_metadata?.nom || "";
       userBox.classList.remove("hidden");
       showMessage("Session déjà active.", "success");
     }
+
+    setMode("signup");
   </script>
 </body>
 </html>
