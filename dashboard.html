@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    body{ font-family:Arial,sans-serif; padding:40px; background:#f5f7fb; }
+    .box{
+      max-width:700px; margin:auto; background:#fff; padding:24px;
+      border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+    button{
+      padding:10px 14px; border:none; border-radius:10px;
+      background:#111827; color:#fff; cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Dashboard</h1>
+    <p id="info">Chargement...</p>
+    <button id="logoutBtn">Se déconnecter</button>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabaseUrl = "COLLE_TON_URL_SUPABASE_ICI";
+    const supabaseKey = "COLLE_TA_ANON_KEY_ICI";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const info = document.getElementById("info");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    if (!sessionData.session) {
+      window.location.href = "index.html";
+    } else {
+      const user = sessionData.session.user;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("nom")
+        .eq("id", user.id)
+        .single();
+
+      info.textContent = `Bonjour ${profile?.nom || user.email}, vous êtes connecté.`;
+    }
+
+    logoutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
