@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inscription / Connexion</title>
+  <title>Connexion / Inscription</title>
   <style>
     body{
       margin:0;
@@ -41,17 +41,10 @@
       border-radius:10px; background:#4c7dff; color:#fff; font-size:16px; cursor:pointer;
     }
     button.submit:hover{ background:#3d6bf0; }
-    .msg{
-      margin-top:16px; padding:12px; border-radius:10px; display:none;
-    }
+    .msg{ margin-top:16px; padding:12px; border-radius:10px; display:none; }
     .success{ background:#e8fff1; color:#116b35; }
     .error{ background:#ffecec; color:#a10000; }
     .hidden{ display:none; }
-    .userbox{
-      margin-top:18px; padding:14px; border:1px solid #e6eaf2;
-      border-radius:10px; background:#fafbff;
-    }
-    .logout{ margin-top:12px; background:#111827; color:#fff; }
   </style>
 </head>
 <body>
@@ -65,31 +58,25 @@
 
     <form id="authForm">
       <label for="nom" id="nomLabel">Nom</label>
-      <input type="text" id="nom" required placeholder="Votre nom et prenom" />
+      <input type="text" id="nom" required placeholder="Votre nom" />
 
       <label for="email">Email</label>
-      <input type="email" id="email" required placeholder="exemple1@email.com" />
+      <input type="email" id="email" required placeholder="exemple@email.com" />
 
       <label for="password">Mot de passe</label>
-      <input type="password" id="password" required placeholder="***" />
+      <input type="password" id="password" required placeholder="********" />
 
       <button class="submit" type="submit" id="submitBtn">Créer un compte</button>
     </form>
 
     <div id="message" class="msg"></div>
-
-    <div id="userBox" class="userbox hidden">
-      <div><strong>Connecté :</strong> <span id="userEmail"></span></div>
-      <div><strong>Nom :</strong> <span id="userNom"></span></div>
-      <button class="submit logout" id="logoutBtn" type="button">Se déconnecter</button>
-    </div>
   </div>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    const supabaseUrl = "https://iupsxuhxkjhaozkrictw.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1cHN4dWh4a2poYW96a3JpY3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxOTU1MzcsImV4cCI6MjA5Mjc3MTUzN30.kXQ6B9sJM0E_EmPIoRXx5R52DminS96TrkGwO7nkgJ0";
+    const supabaseUrl = "COLLE_TON_URL_SUPABASE_ICI";
+    const supabaseKey = "COLLE_TA_ANON_KEY_ICI";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const btnSignup = document.getElementById("btnSignup");
@@ -97,10 +84,6 @@
     const submitBtn = document.getElementById("submitBtn");
     const authForm = document.getElementById("authForm");
     const message = document.getElementById("message");
-    const userBox = document.getElementById("userBox");
-    const userEmail = document.getElementById("userEmail");
-    const userNom = document.getElementById("userNom");
-    const logoutBtn = document.getElementById("logoutBtn");
     const nomInput = document.getElementById("nom");
     const nomLabel = document.getElementById("nomLabel");
 
@@ -119,8 +102,8 @@
       submitBtn.textContent = mode === "signup" ? "Créer un compte" : "Se connecter";
       nomInput.style.display = mode === "signup" ? "block" : "none";
       nomLabel.style.display = mode === "signup" ? "block" : "none";
-      message.style.display = "none";
       nomInput.required = mode === "signup";
+      message.style.display = "none";
     }
 
     btnSignup.addEventListener("click", () => setMode("signup"));
@@ -137,9 +120,7 @@
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: { nom }
-          }
+          options: { data: { nom } }
         });
 
         if (error) {
@@ -147,12 +128,10 @@
           return;
         }
 
-        showMessage("✅ Compte créé. Vérifie ton email si la confirmation est activée.", "success");
-        if (data.user) {
-          userEmail.textContent = data.user.email || email;
-          userNom.textContent = nom;
-          userBox.classList.remove("hidden");
-        }
+        showMessage("✅ Compte créé. Redirection...", "success");
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1000);
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
@@ -164,42 +143,16 @@
           return;
         }
 
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("nom")
-          .eq("id", data.user.id)
-          .single();
-
-        showMessage("✅ Connexion réussie.", "success");
-        userEmail.textContent = data.user.email;
-        userNom.textContent = profile?.nom || data.user.user_metadata?.nom || "";
-        userBox.classList.remove("hidden");
+        showMessage("✅ Connexion réussie. Redirection...", "success");
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1000);
       }
-    });
-
-    logoutBtn.addEventListener("click", async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        showMessage("Erreur déconnexion : " + error.message, "error");
-        return;
-      }
-      userBox.classList.add("hidden");
-      showMessage("Déconnecté.", "success");
     });
 
     const { data: sessionData } = await supabase.auth.getSession();
     if (sessionData.session) {
-      const user = sessionData.session.user;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("nom")
-        .eq("id", user.id)
-        .single();
-
-      userEmail.textContent = user.email;
-      userNom.textContent = profile?.nom || user.user_metadata?.nom || "";
-      userBox.classList.remove("hidden");
-      showMessage("Session déjà active.", "success");
+      window.location.href = "dashboard.html";
     }
 
     setMode("signup");
