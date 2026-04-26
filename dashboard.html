@@ -5,22 +5,225 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard</title>
   <style>
-    body{ font-family:Arial,sans-serif; padding:40px; background:#f5f7fb; }
-    .box{
-      max-width:700px; margin:auto; background:#fff; padding:24px;
-      border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.08);
+    :root{
+      --bg1:#eef4ff;
+      --bg2:#f7f8fc;
+      --card:#ffffff;
+      --primary:#4c7dff;
+      --primary-dark:#3d6bf0;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --success:#e8fff1;
+      --success-text:#116b35;
+      --shadow:0 16px 40px rgba(0,0,0,.08);
     }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    }
+
+    .layout{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .dashboard{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      grid-template-columns: 1.4fr .9fr;
+      gap:20px;
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+
+    .header{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      margin-bottom:20px;
+    }
+
+    h1{
+      margin:0 0 8px;
+      font-size:28px;
+    }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      background:var(--success);
+      color:var(--success-text);
+      border-radius:999px;
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:16px;
+      margin-top:18px;
+    }
+
+    .stat{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      background:#fafbff;
+    }
+
+    .stat .label{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:8px;
+    }
+
+    .stat .value{
+      font-size:18px;
+      font-weight:700;
+      word-break:break-word;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:22px;
+    }
+
     button{
-      padding:10px 14px; border:none; border-radius:10px;
-      background:#111827; color:#fff; cursor:pointer;
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:15px;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-primary:hover{ background:var(--primary-dark); }
+
+    .btn-dark{
+      background:#111827;
+      color:#fff;
+    }
+
+    .btn-dark:hover{ background:#1f2937; }
+
+    .side h2{
+      margin:0 0 12px;
+      font-size:20px;
+    }
+
+    .list{
+      margin:0;
+      padding-left:18px;
+      color:var(--muted);
+      line-height:1.8;
+    }
+
+    .notice{
+      margin-top:16px;
+      padding:14px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px dashed var(--border);
+      color:var(--muted);
+      line-height:1.6;
+    }
+
+    .hidden{ display:none; }
+
+    @media (max-width: 860px){
+      .dashboard{ grid-template-columns:1fr; }
+      .grid{ grid-template-columns:1fr; }
+      .header{ flex-direction:column; }
+      .badge{ width:max-content; }
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Dashboard</h1>
-    <p id="info">Chargement...</p>
-    <button id="logoutBtn">Se déconnecter</button>
+  <div class="layout">
+    <div class="dashboard">
+      <section class="panel">
+        <div class="header">
+          <div>
+            <h1>Dashboard</h1>
+            <p class="subtitle">Bienvenue dans votre espace sécurisé. Ici vous pouvez vérifier votre session et consulter votre profil.</p>
+          </div>
+          <div id="statusBadge" class="badge hidden">Session active</div>
+        </div>
+
+        <div class="grid">
+          <div class="stat">
+            <div class="label">Nom</div>
+            <div class="value" id="userNom">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">Email</div>
+            <div class="value" id="userEmail">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">ID utilisateur</div>
+            <div class="value" id="userId">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">Statut</div>
+            <div class="value" id="userStatus">Chargement...</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="refreshBtn" type="button">Rafraîchir le profil</button>
+          <button class="btn-dark" id="logoutBtn" type="button">Se déconnecter</button>
+        </div>
+
+        <div class="notice" id="notice">
+          Vérification de session en cours...
+        </div>
+      </section>
+
+      <aside class="panel side">
+        <h2>Informations utiles</h2>
+        <ul class="list">
+          <li>Cette page est protégée par la session Supabase.</li>
+          <li>Si la session n’existe pas, l’utilisateur est redirigé vers la page de connexion.</li>
+          <li>Le nom est lu depuis la table <code>profiles</code>.</li>
+          <li>Le mot de passe n’est jamais affiché ici.</li>
+        </ul>
+      </aside>
+    </div>
   </div>
 
   <script type="module">
@@ -30,28 +233,54 @@
     const supabaseKey = "COLLE_TA_ANON_KEY_ICI";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const info = document.getElementById("info");
+    const userNom = document.getElementById("userNom");
+    const userEmail = document.getElementById("userEmail");
+    const userId = document.getElementById("userId");
+    const userStatus = document.getElementById("userStatus");
+    const notice = document.getElementById("notice");
     const logoutBtn = document.getElementById("logoutBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const statusBadge = document.getElementById("statusBadge");
 
-    const { data: sessionData } = await supabase.auth.getSession();
+    async function loadProfile() {
+      const { data: sessionData } = await supabase.auth.getSession();
 
-    if (!sessionData.session) {
-      window.location.href = "index.html";
-    } else {
+      if (!sessionData.session) {
+        window.location.href = "index.html";
+        return;
+      }
+
       const user = sessionData.session.user;
-      const { data: profile } = await supabase
+
+      const { data: profile, error } = await supabase
         .from("profiles")
-        .select("nom")
+        .select("nom, email")
         .eq("id", user.id)
         .single();
 
-      info.textContent = `Bonjour ${profile?.nom || user.email}, vous êtes connecté.`;
+      userId.textContent = user.id;
+      userEmail.textContent = profile?.email || user.email || "—";
+      userNom.textContent = profile?.nom || user.user_metadata?.nom || "—";
+
+      if (error) {
+        userStatus.textContent = "Profil trouvé, mais lecture partielle";
+        notice.textContent = "Le compte est connecté, mais le profil n’a pas pu être chargé complètement.";
+      } else {
+        userStatus.textContent = "Connecté";
+        notice.textContent = "Connexion vérifiée avec succès. Votre dashboard est accessible.";
+      }
+
+      statusBadge.classList.remove("hidden");
     }
 
     logoutBtn.addEventListener("click", async () => {
       await supabase.auth.signOut();
       window.location.href = "index.html";
     });
+
+    refreshBtn.addEventListener("click", loadProfile);
+
+    await loadProfile();
   </script>
 </body>
 </html>
